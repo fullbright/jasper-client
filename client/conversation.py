@@ -1,5 +1,6 @@
 # -*- coding: utf-8-*-
 import logging
+import modules.aiml
 from notifier import Notifier
 from brain import Brain
 
@@ -13,6 +14,20 @@ class Conversation(object):
         self.profile = profile
         self.brain = Brain(mic, profile)
         self.notifier = Notifier(profile)
+        # Load the aiml module
+        self.aimlkernel = aiml.Kernel()
+
+        # Load the aiml files
+        folder = "/home/pi/jasper/client/modules/aiml/alice/"
+        for file in os.listdir(folder):
+            if file.endswith(".aiml"):
+                aimlkernel.learn(folder+file)
+                print(folder+file)
+        folder = "/home/pi/jasper/client/modules/aiml/standard/"
+        for file in os.listdir(folder):
+            if file.endswith(".aiml"):
+                aimlkernel.learn(folder+file)
+                print(folder+file)
 
     def handleForever(self):
         """
