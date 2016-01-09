@@ -24,3 +24,13 @@ python-dateutil==2.3
 
 # MPDControl module
 python-mpd==0.3.0
+
+# Tweeter
+tweepy==3.4.0
+twitter==1.17.1
+
+# XMPP
+xmpppy==0.4.1
+
+# Behaviour trees
+owyl==0.3
