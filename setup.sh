@@ -83,48 +83,49 @@ su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free
 echo "Updating packages repository"
 apt-get update
 
-echo "Install phonetisaurus"
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
-su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
-apt-get update
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
-wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
-tar -xvf g014b2b.tgz
-wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
-wget https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz?dl=0
-
-echo "Install voices"
-tar -xvf g014b2b.tgz*
-cd g014b2b/
-./compile-fst.sh
-fstcompile
-cd ..
-
 echo "Install openfst"
-wget http://distfiles.macports.org/openfst/openfst-1.3.3.tar.gz
+#wget http://distfiles.macports.org/openfst/openfst-1.3.3.tar.gz
 wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.3.3.tar.gz
 tar -xvf openfst-1.3.3.tar.gz
 cd openfst-1.3.3/
 ./configure --enable-compact-fsts --enable-const-fsts --enable-far --enable-lookahead-fsts --enable-pdt
 make install
+rm openfst*.tar.gz
 cd ..
 
-cd g014b2b/
+echo "Install phonetisaurus"
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
+
+echo "Activate experimental package sources"
+su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
+apt-get update
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
+
+
+echo "Downloading voices"
+wget https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz?dl=0
+
+echo "Install voices"
+tar -xvf g014b2b.tgz*
+rm g014b2b.tgz*
+mv g014b2b phonetisaurus
+cd phonetisaurus/
 ./compile-fst.sh
 cd ..
-mv ~/g014b2b ~/phonetisaurus
 
-echo "Install julius"
+echo "Install julius dependencies"
 apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev -y
+
+echo "Download julius"
 wget http://sourceforge.jp/projects/julius/downloads/60273/julius-4.3.1.tar.gz/
-#mv Downloads/julius-4.3.1.tar.gz .
 tar -xvf julius-4.3.1.tar.gz 
 mv julius-4.3.1 julius
 cd julius
 ./configure --enable-words-int
 make
 make install
+rm julius*.tar.gz
 cd ..
 
 echo "Install festival, espeak, festvox-don"
@@ -138,7 +139,6 @@ apt-get install festival festvox-don -y
 echo "Updating packages repository"
 apt-get update
 apt-get install festival festvox-don flite libttspico-utils python-pymad -y
-#pip install --upgrade gTTS
 
 echo "Updating packages repository"
 apt-get update
@@ -156,8 +156,8 @@ cd julius
 ./configure --enable-words-int
 make
 make install
-cd ..
-locate julius | grep hmmdefflite =lv
+
+echo "Lising available voices"
 flite -lv
 cd ..
 
