@@ -84,10 +84,10 @@ echo "Updating packages repository"
 apt-get update
 
 echo "Install phonetisaurus"
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
 su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
 apt-get update
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
 wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
 tar -xvf g014b2b.tgz
 wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
@@ -116,7 +116,7 @@ mv ~/g014b2b ~/phonetisaurus
 
 echo "Install julius"
 apt-get update
-apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev
+apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev -y
 wget http://sourceforge.jp/projects/julius/downloads/60273/julius-4.3.1.tar.gz/
 #mv Downloads/julius-4.3.1.tar.gz .
 tar -xvf julius-4.3.1.tar.gz 
@@ -163,6 +163,18 @@ cd ..
 
 echo "Tune the audio mixer to get some sound"
 
+
+echo "Install supervisord"
+apt-get install supervisor -y
+
+echo "setup the run program"
+service supervisor restart
+cp jasper.conf /etc/supervisor/conf.d/
+
+echo "refresh supervisor"
+supervisorctl reread
+supervisorctl update
+
 echo "Boot jasper"
-/home/pi/jasper/jasper.py --local --debug --diagnose
+#/home/pi/jasper/jasper.py --local --debug --diagnose
 #history >> historyinstallation.txt
