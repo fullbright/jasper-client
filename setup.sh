@@ -74,7 +74,7 @@ apt-get install subversion autoconf libtool automake gfortran g++ --yes
 
 echo "Installing cmuclmtk "
 svn co https://svn.code.sf.net/p/cmusphinx/code/trunk/cmuclmtk/
-cd cmuclmtk/
+cd $(dirname "$0")/cmuclmtk/
 ./autogen.sh && sudo make && sudo make install
 cd ..
 
@@ -85,6 +85,7 @@ apt-get update
 
 echo "Install openfst"
 #wget http://distfiles.macports.org/openfst/openfst-1.3.3.tar.gz
+cd $(dirname "$0")
 wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.3.3.tar.gz
 tar -xvf openfst-1.3.3.tar.gz
 cd openfst-1.3.3/
@@ -103,6 +104,7 @@ apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
 
 
 echo "Downloading voices"
+cd $(dirname "$0")
 wget https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz?dl=0
 
 echo "Install voices"
@@ -117,7 +119,8 @@ echo "Install julius dependencies"
 apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev -y
 
-echo "Download julius"
+echo "Download, configure and install julius"
+cd $(dirname "$0")
 wget http://sourceforge.jp/projects/julius/downloads/60273/julius-4.3.1.tar.gz/
 tar -xvf julius-4.3.1.tar.gz 
 mv julius-4.3.1 julius
@@ -152,6 +155,7 @@ apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev --yes
 
 echo "Configure and install julius"
+cd $(dirname "$0")
 cd julius
 ./configure --enable-words-int
 make
@@ -164,11 +168,16 @@ cd ..
 echo "Tune the audio mixer to get some sound"
 
 
+echo "Set all files ownership to pi user"
+cd $(dirname "$0")
+chown pi:pi *.* -R
+
 echo "Install supervisord"
 apt-get install supervisor -y
 
 echo "setup the run program"
 service supervisor restart
+cd $(dirname "$0")
 cp jasper.conf /etc/supervisor/conf.d/
 
 echo "refresh supervisor"
