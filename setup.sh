@@ -6,6 +6,9 @@ if [[ $UID != 0 ]]; then
     exit 1
 fi
 
+echo "Move to the jasper directory"
+cd $(dirname "$0")
+
 echo "Installing VBoxLinuxAdditions"
 
 # Find a way to mount the ISO automatically
