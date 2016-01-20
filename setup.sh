@@ -53,12 +53,12 @@ echo "Configure alsa sound manager"
 #vim ~/.bash_profile 
 #vim ~/.bashrc
 
-echo "Get the code from github"
-git clone https://github.com/jasperproject/jasper-client.git jasper
+#echo "Get the code from github"
+#git clone https://github.com/jasperproject/jasper-client.git jasper
 
 echo "Install requirements for python"
 pip install --upgrade setuptools
-pip install -r jasper/client/requirements.txt
+pip install -r client/requirements.txt
 
 echo "Updating packages repository"
 apt-get update -y
@@ -78,7 +78,7 @@ cd ..
 echo "Let the OS install experimental and non-free packages"
 su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
 echo "Updating packages repository"
-apt-get update -y
+apt-get update
 
 echo "Install phonetisaurus"
 apt-get -t experimental install phonetisaurus m2m-aligner mitlm
@@ -115,41 +115,41 @@ echo "Install julius"
 apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev
 wget http://sourceforge.jp/projects/julius/downloads/60273/julius-4.3.1.tar.gz/
-mv Downloads/julius-4.3.1.tar.gz .
+#mv Downloads/julius-4.3.1.tar.gz .
 tar -xvf julius-4.3.1.tar.gz 
 mv julius-4.3.1 julius
-cd ~/julius
+cd julius
 ./configure --enable-words-int
 make
 make install
+cd ..
 
 echo "Install festival, espeak, festvox-don"
 echo "Updating packages repository"
 apt-get update
+apt-get install espeak -y
 
-apt-get install espeak
-
-apt-get update -y
-apt-get install festival festvox-don
-
-echo "Updating packages repository"
-apt-get update -y
-apt-get install festival festvox-don flite libttspico-utils python-pymad
-pip install --upgrade gTTS
+apt-get update
+apt-get install festival festvox-don -y
 
 echo "Updating packages repository"
 apt-get update
-sudo apt-get install python-pymad
+apt-get install festival festvox-don flite libttspico-utils python-pymad -y
+#pip install --upgrade gTTS
+
+echo "Updating packages repository"
+apt-get update
+apt-get install python-pymad -y
 
 echo "Upgrade python library gTTS and pyvona"
 pip install --upgrade gTTS
 pip install --upgrade pyvona
 
-apt-get update -y
+apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev --yes
 
 echo "Configure and install julius"
-cd ~/julius
+cd julius
 ./configure --enable-words-int
 make
 make install
@@ -159,5 +159,7 @@ flite -lv
 cd ..
 
 echo "Tune the audio mixer to get some sound"
+
+echo "Boot jasper"
 /home/pi/jasper/jasper.py --local --debug --diagnose
 #history >> historyinstallation.txt
