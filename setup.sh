@@ -6,6 +6,9 @@ if [[ $UID != 0 ]]; then
     exit 1
 fi
 
+echo "Move to the jasper directory"
+cd $(dirname "$0")
+
 echo "Installing VBoxLinuxAdditions"
 
 # Find a way to mount the ISO automatically
@@ -53,12 +56,12 @@ echo "Configure alsa sound manager"
 #vim ~/.bash_profile 
 #vim ~/.bashrc
 
-echo "Get the code from github"
-git clone https://github.com/jasperproject/jasper-client.git jasper
+#echo "Get the code from github"
+#git clone https://github.com/jasperproject/jasper-client.git jasper
 
 echo "Install requirements for python"
 pip install --upgrade setuptools
-pip install -r jasper/client/requirements.txt
+pip install -r client/requirements.txt
 
 echo "Updating packages repository"
 apt-get update -y
@@ -71,93 +74,116 @@ apt-get install subversion autoconf libtool automake gfortran g++ --yes
 
 echo "Installing cmuclmtk "
 svn co https://svn.code.sf.net/p/cmusphinx/code/trunk/cmuclmtk/
-cd cmuclmtk/
+cd $(dirname "$0")/cmuclmtk/
 ./autogen.sh && sudo make && sudo make install
 cd ..
 
 echo "Let the OS install experimental and non-free packages"
 su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
 echo "Updating packages repository"
-apt-get update -y
-
-echo "Install phonetisaurus"
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm
-su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
 apt-get update
-apt-get -t experimental install phonetisaurus m2m-aligner mitlm
-wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
-tar -xvf g014b2b.tgz
-wget http://phonetisaurus.googlecode.com/files/g014b2b.tgz
-wget https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz?dl=0
-
-echo "Install voices"
-tar -xvf g014b2b.tgz*
-cd g014b2b/
-./compile-fst.sh
-fstcompile
-cd ..
 
 echo "Install openfst"
-wget http://distfiles.macports.org/openfst/openfst-1.3.3.tar.gz
+#wget http://distfiles.macports.org/openfst/openfst-1.3.3.tar.gz
+cd $(dirname "$0")
 wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.3.3.tar.gz
 tar -xvf openfst-1.3.3.tar.gz
 cd openfst-1.3.3/
 ./configure --enable-compact-fsts --enable-const-fsts --enable-far --enable-lookahead-fsts --enable-pdt
 make install
+rm openfst*.tar.gz
 cd ..
 
-cd g014b2b/
+echo "Install phonetisaurus"
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
+
+echo "Activate experimental package sources"
+su -c "echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list"
+apt-get update
+apt-get -t experimental install phonetisaurus m2m-aligner mitlm -y
+
+
+echo "Downloading voices"
+cd $(dirname "$0")
+wget https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz?dl=0
+
+echo "Install voices"
+tar -xvf g014b2b.tgz*
+rm g014b2b.tgz*
+mv g014b2b phonetisaurus
+cd phonetisaurus/
 ./compile-fst.sh
 cd ..
-mv ~/g014b2b ~/phonetisaurus
 
-echo "Install julius"
+echo "Install julius dependencies"
 apt-get update
-apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev
+apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev -y
+
+echo "Download, configure and install julius"
+cd $(dirname "$0")
 wget http://sourceforge.jp/projects/julius/downloads/60273/julius-4.3.1.tar.gz/
-mv Downloads/julius-4.3.1.tar.gz .
 tar -xvf julius-4.3.1.tar.gz 
 mv julius-4.3.1 julius
-cd ~/julius
+cd julius
 ./configure --enable-words-int
 make
 make install
+rm julius*.tar.gz
+cd ..
 
 echo "Install festival, espeak, festvox-don"
 echo "Updating packages repository"
 apt-get update
+apt-get install espeak -y
 
-apt-get install espeak
-
-apt-get update -y
-apt-get install festival festvox-don
-
-echo "Updating packages repository"
-apt-get update -y
-apt-get install festival festvox-don flite libttspico-utils python-pymad
-pip install --upgrade gTTS
+apt-get update
+apt-get install festival festvox-don -y
 
 echo "Updating packages repository"
 apt-get update
-sudo apt-get install python-pymad
+apt-get install festival festvox-don flite libttspico-utils python-pymad -y
+
+echo "Updating packages repository"
+apt-get update
+apt-get install python-pymad -y
 
 echo "Upgrade python library gTTS and pyvona"
 pip install --upgrade gTTS
 pip install --upgrade pyvona
 
-apt-get update -y
+apt-get update
 apt-get install build-essential zlib1g-dev flex libasound2-dev libesd0-dev libsndfile1-dev --yes
 
 echo "Configure and install julius"
-cd ~/julius
+cd $(dirname "$0")
+cd julius
 ./configure --enable-words-int
 make
 make install
-cd ..
-locate julius | grep hmmdefflite =lv
+
+echo "Lising available voices"
 flite -lv
 cd ..
 
 echo "Tune the audio mixer to get some sound"
-/home/pi/jasper/jasper.py --local --debug --diagnose
+
+
+echo "Set all files ownership to pi user"
+cd $(dirname "$0")
+chown pi:pi *.* -R
+
+echo "Install supervisord"
+apt-get install supervisor -y
+
+echo "setup the run program"
+service supervisor restart
+cd $(dirname "$0")
+cp jasper.conf /etc/supervisor/conf.d/
+
+echo "refresh supervisor"
+supervisorctl reread
+supervisorctl update
+
+echo "Boot jasper"
+#/home/pi/jasper/jasper.py --local --debug --diagnose
 #history >> historyinstallation.txt
