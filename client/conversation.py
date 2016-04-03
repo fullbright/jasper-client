@@ -1,8 +1,9 @@
 # -*- coding: utf-8-*-
 import logging
-import modules.aiml
+import modules.aiml as aiml
 from notifier import Notifier
 from brain import Brain
+import os
 
 
 class Conversation(object):
@@ -21,12 +22,12 @@ class Conversation(object):
         folder = "/home/pi/jasper/client/modules/aiml/alice/"
         for file in os.listdir(folder):
             if file.endswith(".aiml"):
-                aimlkernel.learn(folder+file)
+                self.aimlkernel.learn(folder+file)
                 print(folder+file)
         folder = "/home/pi/jasper/client/modules/aiml/standard/"
         for file in os.listdir(folder):
             if file.endswith(".aiml"):
-                aimlkernel.learn(folder+file)
+                self.aimlkernel.learn(folder+file)
                 print(folder+file)
 
     def handleForever(self):
@@ -62,3 +63,9 @@ class Conversation(object):
                 self.brain.query(input)
             else:
                 self.mic.say("Pardon?")
+
+            # Call behaviour tree
+            self._logger.debug("Calling next on the behaviour tree")
+            print("Calling next on the behaviour tree")
+
+            self.brain.tick()

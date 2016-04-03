@@ -2,6 +2,8 @@
 import logging
 import pkgutil
 import jasperpath
+from owyl import blackboard
+import owyl
 
 
 class Brain(object):
@@ -22,7 +24,98 @@ class Brain(object):
         self.mic = mic
         self.profile = profile
         self.modules = self.get_modules()
+        self.bb = blackboard.Blackboard("jasperbrain")
+        #self.schedule(self.update)
+        self.behaviour = self.buildTree()
         self._logger = logging.getLogger(__name__)
+
+    def buildTree(self):
+        """ Build the behaviour buildTree
+            Building a behaviour tree is as simple as nesting 
+            behaviour constructor calls.
+
+            Building the behaviour tree
+            ============================
+
+            We use parallel to have many behaviour tree run at the same time
+            - check the internet connection
+            - check new tweets and reply
+            - check for new emails
+
+            Core Behaviours
+            ===============
+
+            The core behaviour are documented below in each method's docstring. They are :
+            - Brain.query : queries all modules for a response to a question
+            - Brain.checkinternet : check that internet connexion is available
+            - Brain.checknewtweets : check that new tweets are available.
+            - Brain.checknewemails : check that there are new emails
+
+
+        """
+
+        tree = owyl.parallel(
+                    ### Check that internet is available
+                    ####################################
+                    owyl.limit(
+                            owyl.repeatAlways(self.checkinternet(), debug=True, limit_period=2.4)
+
+                        ),
+
+                    ### Check new tweets
+                    ####################################
+                    self.checknewtweets(),
+
+                    ### Check new emails
+                    ####################################
+                    self.checknewemails(),
+
+                    policy=owyl.PARALLEL_SUCCESS.REQUIRE_ALL
+
+            )
+
+        return owyl.visit(tree, blackboard=self.bb)
+
+    @owyl.taskmethod
+    def checkinternet(self, **kwargs):
+        """ Checks that internet is available
+        @keyword internet : available or not
+        """
+        self._logger.debug("Checking for internet availability")
+        print("Checking for internet availability")
+        yield True
+
+    @owyl.taskmethod
+    def checknewtweets(self, **kwargs):
+        """
+        Check to see if there are new tweets to process
+        """
+        self._logger.debug("Checking for new tweets")
+        print("Checking for new tweets")
+        yield True
+
+    @owyl.taskmethod
+    def checknewemails(self, **kwargs):
+        """
+        Check to see if there are new tweets to process
+        """
+        self._logger.debug("Checking for new emails")
+        print("Checking for new emails")
+        yield True
+
+    def update(self, dt):
+        """
+        Update the behaviour tree.
+        This get scheduled in __init__
+        @param dt: Change in time since last update
+        @type dt: C{float} in seconds
+
+        """
+        self.bb['dt'] = dt
+        self.behaviour.next()
+
+    def tick():
+        self.behaviour.next()
 
     @classmethod
     def get_modules(cls):
