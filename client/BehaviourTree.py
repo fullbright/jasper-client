@@ -54,9 +54,9 @@ class BehaviourTree(object):
                     ### Check that internet is available
                     ####################################
                     owyl.limit(
-                            owyl.repeatAlways(self.checkinternet(), debug=True, limit_period=2.4)
-
-                        ),
+                        owyl.repeatAlways(self.checkinternet(), debug=True), 
+                        limit_period=2.4
+                    ),
 
                     ### Check new tweets
                     ####################################
@@ -79,7 +79,11 @@ class BehaviourTree(object):
         """
         self._logger.debug("Checking for internet availability")
         print("Checking for internet availability")
-        yield True
+        #yield True
+
+        while True:
+        	print "check check internet ..."
+        	yield True
 
     @owyl.taskmethod
     def checknewtweets(self, **kwargs):
@@ -88,7 +92,11 @@ class BehaviourTree(object):
         """
         self._logger.debug("Checking for new tweets")
         print("Checking for new tweets")
-        yield True
+        #yield True
+
+        while True:
+        	print "check check tweets ..."
+        	yield False
 
     @owyl.taskmethod
     def checknewemails(self, **kwargs):
@@ -97,7 +105,11 @@ class BehaviourTree(object):
         """
         self._logger.debug("Checking for new emails")
         print("Checking for new emails")
-        yield True
+        #yield True
+
+        while True:
+        	print "check check emails ..."
+        	yield True
 
     def update(self, dt):
         """
@@ -108,10 +120,13 @@ class BehaviourTree(object):
 
         """
         self.bb['dt'] = dt
-        self.behaviour.next()
+        #self.behaviour.next()
+
 
     def tick(self):
+    	print("** tick **")
         self.behaviour.next()
+        #owyl.visit(self.behaviour)
 
     @classmethod
     def get_modules(cls):
